@@ -1,28 +1,37 @@
 package com.a3.fila_banco.service;
 
+import com.a3.fila_banco.model.Cliente;
+import com.a3.fila_banco.repository.ClienteRepository;
 import com.a3.fila_banco.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+    
+    @Autowired
+    private ClienteRepository clienteRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-  @Autowired
-  private JwtUtil jwtUtil;
+    public boolean validarCredenciais(String email, String password) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+            .orElse(null);
+        
+        if (cliente != null) {
+            // Verifica se a senha fornecida corresponde à senha criptografada
+            return passwordEncoder.matches(password, cliente.getSenha());
+        }
+        
+        return false;
+    }
 
-  /**
-   * Valida as credenciais de login.
-   * Substitua essa lógica com validações reais, como consultas ao banco de dados.
-   */
-  public boolean validarCredenciais(String username, String password) {
-    // Apenas um exemplo básico
-    return "admin".equals(username) && "senha123".equals(password);
-  }
-
-  /**
-   * Gera um token JWT para o usuário autenticado.
-   */
-  public String gerarToken(String username) {
-    return jwtUtil.generateToken(username);
-  }
+    public String gerarToken(String email) {
+        return jwtUtil.generateToken(email);
+    }
 }

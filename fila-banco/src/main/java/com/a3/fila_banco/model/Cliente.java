@@ -6,6 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -15,11 +19,18 @@ public class Cliente {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "Nome é obrigatório")
   private String nome;
+
+  @NotBlank(message = "Senha é obrigatória")
   private String senha;
-  private String email; // Adicionando email como atributo
-  private LocalDateTime dataCriacao; // Adicionando data de criação
-  private boolean ativo; // Adicionando status do cliente (ativo/inativo)
+
+  @NotBlank(message = "Email é obrigatório")
+  @Email(message = "Email deve ser válido")
+  private String email;
+
+  private LocalDateTime dataCriacao;
+  private boolean ativo;
 
   // Getters e Setters
   public Long getId() {
