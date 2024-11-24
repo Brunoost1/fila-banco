@@ -21,6 +21,7 @@ public class SecurityConfig {
                 .requestMatchers("/login").permitAll()
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/clientes/**").permitAll()  // Adicione esta linha
+                .requestMatchers("/atendimento/**").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(AbstractHttpConfigurer::disable);
