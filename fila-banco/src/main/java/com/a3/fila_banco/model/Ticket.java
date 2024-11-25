@@ -19,9 +19,14 @@ public class Ticket {
     private Long clienteId;
     private LocalDateTime dataCriacao;
     private Integer guiche;
+    private Integer posicaoFila;
+    private Integer tempoEstimado;
     
     @Enumerated(EnumType.STRING)
     private StatusAtendimento status;
+    
+    @Enumerated(EnumType.STRING)
+    private TipoAtendimento tipoAtendimento;
 
     public enum StatusAtendimento {
         AGUARDANDO,
@@ -77,5 +82,29 @@ public class Ticket {
 
     public void setStatus(StatusAtendimento status) {
         this.status = status;
+    }
+
+    public TipoAtendimento getTipoAtendimento() {
+        return tipoAtendimento;
+    }
+
+    public void setTipoAtendimento(TipoAtendimento tipoAtendimento) {
+        this.tipoAtendimento = tipoAtendimento;
+    }
+
+    public Integer getPosicaoFila() {
+        return posicaoFila;
+    }
+
+    public void setPosicaoFila(Integer posicaoFila) {
+        this.posicaoFila = posicaoFila;
+    }
+
+    public Integer getTempoEstimado() {
+        return tempoEstimado;
+    }
+
+    public void setTempoEstimado(Integer tempoEstimado) {
+        this.tempoEstimado = tempoEstimado;
     }
 }
