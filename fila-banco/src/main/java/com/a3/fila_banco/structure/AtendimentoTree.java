@@ -1,16 +1,20 @@
 package com.a3.fila_banco.structure;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.a3.fila_banco.model.Ticket;
-import com.a3.fila_banco.model.TipoAtendimento;
 
 public class AtendimentoTree {
-    private AtendimentoNode root;
+    private final AtendimentoNode root;
 
     public AtendimentoTree() {
         // Cria a estrutura inicial da árvore
         this.root = new AtendimentoNode("TODOS");
-        
+
         // Adiciona os tipos de atendimento como nós
         root.setLeft(new AtendimentoNode("CONTA"));
         root.setRight(new AtendimentoNode("EMPRESTIMO"));
@@ -18,12 +22,10 @@ public class AtendimentoTree {
     }
 
     public void adicionarTicket(Ticket ticket) {
-        if (ticket.getTipoAtendimento() == TipoAtendimento.ABERTURA_CONTA) {
-            addToNode(root.getLeft(), ticket);
-        } else if (ticket.getTipoAtendimento() == TipoAtendimento.EMPRESTIMO) {
-            addToNode(root.getRight(), ticket);
-        } else {
-            addToNode(root.getRight().getRight(), ticket);
+        switch (ticket.getTipoAtendimento()) {
+            case ABERTURA_CONTA -> addToNode(root.getLeft(), ticket);
+            case EMPRESTIMO -> addToNode(root.getRight(), ticket);
+            default -> addToNode(root.getRight().getRight(), ticket);
         }
         // Adiciona também na raiz para ter todos os tickets
         addToNode(root, ticket);
@@ -37,16 +39,19 @@ public class AtendimentoTree {
 
     public List<Ticket> buscarPorTipo(String tipo) {
         return findNode(root, tipo)
-            .map(node -> node.getTickets())
-            .orElse(new ArrayList<>());
+                .map(node -> node.getTickets())
+                .orElse(new ArrayList<>());
     }
 
     private Optional<AtendimentoNode> findNode(AtendimentoNode current, String tipo) {
-        if (current == null) return Optional.empty();
-        if (current.getTipo().equals(tipo)) return Optional.of(current);
+        if (current == null)
+            return Optional.empty();
+        if (current.getTipo().equals(tipo))
+            return Optional.of(current);
 
         Optional<AtendimentoNode> left = findNode(current.getLeft(), tipo);
-        if (left.isPresent()) return left;
+        if (left.isPresent())
+            return left;
 
         return findNode(current.getRight(), tipo);
     }

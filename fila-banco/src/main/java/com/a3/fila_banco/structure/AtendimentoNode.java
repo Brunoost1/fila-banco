@@ -2,13 +2,14 @@ package com.a3.fila_banco.structure;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.a3.fila_banco.model.Ticket;
 
 public class AtendimentoNode {
-    private String tipo;
+    private final String tipo;
     private AtendimentoNode left;
     private AtendimentoNode right;
-    private List<Ticket> tickets;
+    private final List<Ticket> tickets;
 
     public AtendimentoNode(String tipo) {
         this.tipo = tipo;
