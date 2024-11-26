@@ -1,13 +1,21 @@
 package com.a3.fila_banco.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.a3.fila_banco.model.Ticket;
-import com.a3.fila_banco.model.SenhaRequest;
-import com.a3.fila_banco.service.AtendimentoService;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.a3.fila_banco.model.SenhaRequest;
+import com.a3.fila_banco.model.Ticket;
+import com.a3.fila_banco.model.Ticket.StatusAtendimento;
+import com.a3.fila_banco.service.AtendimentoService;
 
 @RestController
 @RequestMapping("/atendimento")
@@ -31,14 +39,24 @@ public class AtendimentoController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    
 
     @PostMapping("/chamar/{guiche}")
     public ResponseEntity<Ticket> chamarProximo(@PathVariable Integer guiche) {
-        Ticket ticket = atendimentoService.chamarProximo(guiche);
-        if (ticket != null) {
-            return ResponseEntity.ok(ticket);
+        try {
+            System.out.println("Chamando próximo ticket para guichê: " + guiche);
+            Ticket ticket = atendimentoService.chamarProximo(guiche);
+            if (ticket != null) {
+                System.out.println("Ticket chamado: " + ticket.getSenha());
+                return ResponseEntity.ok(ticket);
+            }
+            System.out.println("Nenhum ticket disponível para atendimento");
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            System.err.println("Erro ao chamar próximo ticket: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/status/{senha}")
@@ -48,6 +66,18 @@ public class AtendimentoController {
             return ResponseEntity.ok(ticket);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+      @GetMapping("/aguardando")
+    public ResponseEntity<List<Ticket>> listarAguardando() {
+        try {
+            List<Ticket> tickets = atendimentoService.listarPorStatus(StatusAtendimento.AGUARDANDO);
+            return ResponseEntity.ok(tickets);
+        } catch (Exception e) {
+            System.err.println("Erro ao listar tickets aguardando: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
     }
 

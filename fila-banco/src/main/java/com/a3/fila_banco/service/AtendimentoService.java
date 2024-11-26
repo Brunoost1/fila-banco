@@ -1,15 +1,18 @@
 package com.a3.fila_banco.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.a3.fila_banco.model.Ticket;
 import com.a3.fila_banco.model.Ticket.StatusAtendimento;
 import com.a3.fila_banco.model.TipoAtendimento;
 import com.a3.fila_banco.repository.TicketRepository;
 import com.a3.fila_banco.structure.AtendimentoTree;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class AtendimentoService {
@@ -105,5 +108,9 @@ public class AtendimentoService {
 
     public List<Ticket> buscarAtendimentosPorTipo(String tipo) {
         return atendimentoTree.buscarPorTipo(tipo);
+    }
+
+    public List<Ticket> listarPorStatus(StatusAtendimento status) {
+        return ticketRepository.findByStatusOrderByDataCriacaoAsc(status);
     }
 }

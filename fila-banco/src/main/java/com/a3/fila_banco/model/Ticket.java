@@ -47,6 +47,41 @@ public class Ticket {
     public String getSenha() {
         return senha;
     }
+    private LocalDateTime dataInicio;
+
+
+
+    public LocalDateTime getDataInicio() {
+
+        return dataInicio;
+
+    }
+
+
+
+    public void setDataInicio(LocalDateTime dataInicio) {
+
+        this.dataInicio = dataInicio;
+    }
+
+    private LocalDateTime dataFim;
+
+
+
+    public LocalDateTime getDataFim() {
+
+        return dataFim;
+
+    }
+
+
+
+    public void setDataFim(LocalDateTime dataFim) {
+
+        this.dataFim = dataFim;
+
+    }
+
 
     public void setSenha(String senha) {
         this.senha = senha;
