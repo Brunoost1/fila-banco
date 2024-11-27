@@ -40,7 +40,11 @@ public class AtendimentoController {
         }
     }
     
-
+    @GetMapping("/chamadas")
+    public ResponseEntity<List<Ticket>> listarChamadas() {
+        List<Ticket> tickets = atendimentoService.listarSenhasChamadas();
+        return ResponseEntity.ok(tickets);
+    }
     @PostMapping("/chamar/{guiche}")
     public ResponseEntity<Ticket> chamarProximo(@PathVariable Integer guiche) {
         try {

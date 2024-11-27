@@ -1,11 +1,13 @@
 package com.a3.fila_banco.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.a3.fila_banco.model.Ticket;
@@ -19,7 +21,8 @@ public class AtendimentoService {
     
     @Autowired
     private TicketRepository ticketRepository;
-    
+    private SimpMessagingTemplate messagingTemplate;
+
     private AtomicInteger senhaCounter = new AtomicInteger(1);
     private final AtendimentoTree atendimentoTree = new AtendimentoTree();
 
@@ -70,6 +73,7 @@ public class AtendimentoService {
             proximo.setGuiche(guiche);
             Ticket ticketSalvo = ticketRepository.save(proximo);
             atualizarFilaAposAtendimento(proximo.getTipoAtendimento());
+            messagingTemplate.convertAndSend("/topic/senhas", ticketSalvo);
             return ticketSalvo;
         }
         return null;
@@ -87,7 +91,11 @@ public class AtendimentoService {
             ticketRepository.save(ticket);
         }
     }
-
+    public List<Ticket> listarSenhasChamadas() {
+        return ticketRepository.findByStatusInOrderByDataCriacaoDesc(
+            Arrays.asList(StatusAtendimento.CHAMANDO, StatusAtendimento.EM_ATENDIMENTO)
+        );
+    }
     public Ticket consultarTicket(String senha) {
         return ticketRepository.findFirstBySenhaOrderByDataCriacaoDesc(senha)
             .orElseThrow(() -> new RuntimeException("Senha não encontrada"));
@@ -100,12 +108,13 @@ public class AtendimentoService {
         if (ticket.getStatus() == StatusAtendimento.CHAMANDO) {
             ticket.setStatus(StatusAtendimento.EM_ATENDIMENTO);
             ticket.setDataInicio(LocalDateTime.now());
-            return ticketRepository.save(ticket);
+            Ticket ticketSalvo = ticketRepository.save(ticket);
+            messagingTemplate.convertAndSend("/topic/senhas", ticketSalvo);
+            return ticketSalvo;
         } else {
             throw new RuntimeException("Ticket não está no status CHAMANDO");
         }
     }
-    
     public Ticket finalizarAtendimento(String senha) {
         Ticket ticket = ticketRepository.findFirstBySenhaOrderByDataCriacaoDesc(senha)
             .orElseThrow(() -> new RuntimeException("Senha não encontrada"));
