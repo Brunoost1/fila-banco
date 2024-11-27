@@ -14,4 +14,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Ticket findFirstByStatusOrderByDataCriacaoAsc(StatusAtendimento status);
     List<Ticket> findByStatusOrderByDataCriacaoAsc(StatusAtendimento status);
     int countByTipoAtendimentoAndStatus(TipoAtendimento tipo, StatusAtendimento status);
+    List<Ticket> findByTipoAtendimentoAndStatusOrderByDataCriacaoAsc(TipoAtendimento tipo, StatusAtendimento status);
 }

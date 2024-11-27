@@ -9,6 +9,9 @@ type Ticket = {
   tipoAtendimento: string;
   status: string;
   guiche: number | null;
+  posicaoFila: number;
+  tempoEstimado: number;
+  dataCriacao: string;
 };
 
 export default function Atendente() {
@@ -17,7 +20,6 @@ export default function Atendente() {
   const [guiche, setGuiche] = useState('1');
   const [loading, setLoading] = useState(false);
 
-  // Buscar senhas aguardando
   const buscarSenhas = async () => {
     try {
       const response = await api.get('/atendimento/aguardando');
@@ -27,13 +29,12 @@ export default function Atendente() {
     }
   };
 
-  // Chamar próxima senha
   const chamarProximo = async () => {
     try {
       setLoading(true);
       const response = await api.post(`/atendimento/chamar/${guiche}`);
       setSenhaAtual(response.data);
-      await buscarSenhas(); // Atualiza a lista
+      await buscarSenhas();
     } catch (error) {
       console.error('Erro ao chamar próximo:', error);
     } finally {
@@ -41,7 +42,17 @@ export default function Atendente() {
     }
   };
 
-  // Finalizar atendimento
+  const iniciarAtendimento = async (senha: string) => {
+    try {
+      await api.post(`/atendimento/iniciar/${senha}`);
+      const response = await api.get(`/atendimento/status/${senha}`);
+      setSenhaAtual(response.data);
+      await buscarSenhas();
+    } catch (error) {
+      console.error('Erro ao iniciar atendimento:', error);
+    }
+  };
+
   const finalizarAtendimento = async (senha: string) => {
     try {
       await api.post(`/atendimento/finalizar/${senha}`);
@@ -52,9 +63,18 @@ export default function Atendente() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'AGUARDANDO': return 'bg-yellow-100 text-yellow-800';
+      case 'CHAMANDO': return 'bg-blue-100 text-blue-800';
+      case 'EM_ATENDIMENTO': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   useEffect(() => {
     buscarSenhas();
-    const interval = setInterval(buscarSenhas, 5000); // Atualiza a cada 5 segundos
+    const interval = setInterval(buscarSenhas, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -80,9 +100,9 @@ export default function Atendente() {
               </select>
               <button
                 onClick={chamarProximo}
-                disabled={loading}
+                disabled={loading || senhaAtual !== null}
                 className={`px-6 py-2 rounded-lg text-white font-medium ${
-                  loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                  loading || senhaAtual !== null ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               >
                 {loading ? 'Chamando...' : 'Chamar Próximo'}
@@ -98,14 +118,26 @@ export default function Atendente() {
               <h2 className="text-xl font-semibold text-green-800">Em Atendimento</h2>
               <p className="text-4xl font-bold text-green-600 mt-2">{senhaAtual.senha}</p>
               <p className="text-green-700 mt-2">
-                {senhaAtual.tipoAtendimento.replace('_', ' ')}
+                {senhaAtual.tipoAtendimento.replace('_', ' ')  || 'Não especificado'}
               </p>
-              <button
-                onClick={() => finalizarAtendimento(senhaAtual.senha)}
-                className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Finalizar Atendimento
-              </button>
+              <div className="flex justify-center gap-4 mt-4">
+                {senhaAtual.status === 'CHAMANDO' && (
+                  <button
+                    onClick={() => iniciarAtendimento(senhaAtual.senha)}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Iniciar Atendimento
+                  </button>
+                )}
+                {senhaAtual.status === 'EM_ATENDIMENTO' && (
+                  <button
+                    onClick={() => finalizarAtendimento(senhaAtual.senha)}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Finalizar Atendimento
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -122,12 +154,18 @@ export default function Atendente() {
                 <div>
                   <p className="font-semibold">{ticket.senha}</p>
                   <p className="text-sm text-gray-600">
-                    {ticket.tipoAtendimento.replace('_', ' ')}
+                  {ticket.tipoAtendimento?.replace('_', ' ') || 'Não especificado'}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-500">
+                    Espera: {ticket.tempoEstimado}min
+                  </span>
                   <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-                    Aguardando
+                    Posição: {ticket.posicaoFila}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(ticket.status)}`}>
+                  {ticket.tipoAtendimento?.replace('_', ' ') || 'Não especificado'}
                   </span>
                 </div>
               </div>

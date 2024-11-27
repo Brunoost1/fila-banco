@@ -68,9 +68,24 @@ public class AtendimentoService {
         if (proximo != null) {
             proximo.setStatus(StatusAtendimento.CHAMANDO);
             proximo.setGuiche(guiche);
-            return ticketRepository.save(proximo);
+            Ticket ticketSalvo = ticketRepository.save(proximo);
+            atualizarFilaAposAtendimento(proximo.getTipoAtendimento());
+            return ticketSalvo;
         }
         return null;
+    }
+
+    private void atualizarFilaAposAtendimento(TipoAtendimento tipo) {
+        List<Ticket> ticketsAguardando = ticketRepository.findByTipoAtendimentoAndStatusOrderByDataCriacaoAsc(
+            tipo, StatusAtendimento.AGUARDANDO
+        );
+        
+        for (int i = 0; i < ticketsAguardando.size(); i++) {
+            Ticket ticket = ticketsAguardando.get(i);
+            ticket.setPosicaoFila(i + 1);
+            ticket.setTempoEstimado((i + 1) * 10);
+            ticketRepository.save(ticket);
+        }
     }
 
     public Ticket consultarTicket(String senha) {
@@ -84,6 +99,7 @@ public class AtendimentoService {
             
         if (ticket.getStatus() == StatusAtendimento.CHAMANDO) {
             ticket.setStatus(StatusAtendimento.EM_ATENDIMENTO);
+            ticket.setDataInicio(LocalDateTime.now());
             return ticketRepository.save(ticket);
         } else {
             throw new RuntimeException("Ticket não está no status CHAMANDO");
@@ -96,10 +112,15 @@ public class AtendimentoService {
             
         if (ticket.getStatus() == StatusAtendimento.EM_ATENDIMENTO) {
             ticket.setStatus(StatusAtendimento.FINALIZADO);
+            ticket.setDataFim(LocalDateTime.now());
             return ticketRepository.save(ticket);
         } else {
             throw new RuntimeException("Ticket não está em atendimento");
         }
+    }
+
+    public List<Ticket> listarPorStatus(StatusAtendimento status) {
+        return ticketRepository.findByStatusOrderByDataCriacaoAsc(status);
     }
 
     public Map<String, List<Ticket>> gerarRelatorioAtendimentos() {
@@ -110,7 +131,16 @@ public class AtendimentoService {
         return atendimentoTree.buscarPorTipo(tipo);
     }
 
-    public List<Ticket> listarPorStatus(StatusAtendimento status) {
-        return ticketRepository.findByStatusOrderByDataCriacaoAsc(status);
+    public List<Ticket> listarAguardandoPorTipo(TipoAtendimento tipo) {
+        return ticketRepository.findByTipoAtendimentoAndStatusOrderByDataCriacaoAsc(
+            tipo, StatusAtendimento.AGUARDANDO
+        );
+    }
+
+    public int estimarTempoEspera(TipoAtendimento tipo) {
+        int pessoasNaFrente = ticketRepository.countByTipoAtendimentoAndStatus(
+            tipo, StatusAtendimento.AGUARDANDO
+        );
+        return pessoasNaFrente * 10; // 10 minutos por pessoa
     }
 }

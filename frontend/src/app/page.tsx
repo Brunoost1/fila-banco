@@ -9,7 +9,7 @@ export default function Home() {
           Bem-vindo ao sistema de gerenciamento de filas
         </p>
         
-        <div className="flex gap-4 justify-center pt-4">
+        <div className="flex gap-4 justify-center pt-4 flex-wrap">
           <Link 
             href="/login" 
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
@@ -21,6 +21,12 @@ export default function Home() {
             className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
           >
             Criar Conta
+          </Link>
+          <Link 
+            href="/atendente" 
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Área do Atendente
           </Link>
           <Link 
             href="/painel" 
