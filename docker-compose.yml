@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-fila-banco
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - fila-network
+
+  app:
+    build: 
+      context: ./fila-banco    # Caminho para o backend
+      dockerfile: Dockerfile
+    container_name: app-fila-banco
+    depends_on:
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://a3-fila.mysql.database.azure.com:3306/a3_java
+      SPRING_DATASOURCE_USERNAME: garrafa
+      SPRING_DATASOURCE_PASSWORD: Taus67t4DtFhFg
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - fila-network
+
+  frontend:
+    build: 
+      context: ./frontend    # Caminho para o frontend
+      dockerfile: Dockerfile
+    container_name: frontend-fila-banco
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://app:8080
+    depends_on:
+      - app
+    networks:
+      - fila-network
+
+networks:
+  fila-network:
+    driver: bridge
