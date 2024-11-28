@@ -21,8 +21,9 @@ public class AtendimentoService {
     
     @Autowired
     private TicketRepository ticketRepository;
-    private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     private AtomicInteger senhaCounter = new AtomicInteger(1);
     private final AtendimentoTree atendimentoTree = new AtendimentoTree();
 
@@ -64,19 +65,33 @@ public class AtendimentoService {
     }
 
     public Ticket chamarProximo(Integer guiche) {
-        Ticket proximo = ticketRepository.findFirstByStatusOrderByDataCriacaoAsc(
-            StatusAtendimento.AGUARDANDO
-        );
-            
-        if (proximo != null) {
-            proximo.setStatus(StatusAtendimento.CHAMANDO);
-            proximo.setGuiche(guiche);
-            Ticket ticketSalvo = ticketRepository.save(proximo);
-            atualizarFilaAposAtendimento(proximo.getTipoAtendimento());
-            messagingTemplate.convertAndSend("/topic/senhas", ticketSalvo);
-            return ticketSalvo;
+        try {
+            Ticket proximo = ticketRepository.findFirstByStatusOrderByDataCriacaoAsc(
+                StatusAtendimento.AGUARDANDO
+            );
+                
+            if (proximo != null) {
+                proximo.setStatus(StatusAtendimento.CHAMANDO);
+                proximo.setGuiche(guiche);
+                Ticket ticketSalvo = ticketRepository.save(proximo);
+                atualizarFilaAposAtendimento(proximo.getTipoAtendimento());
+                
+                // Enviar atualizações via WebSocket
+                try {
+                    messagingTemplate.convertAndSend("/topic/senhas", ticketSalvo);
+                } catch (Exception e) {
+                    System.err.println("Erro ao enviar mensagem WebSocket: " + e.getMessage());
+                    // Não deixa o erro do WebSocket impedir a operação principal
+                }
+                
+                return ticketSalvo;
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Erro ao chamar próximo: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao chamar próximo ticket", e);
         }
-        return null;
     }
 
     private void atualizarFilaAposAtendimento(TipoAtendimento tipo) {

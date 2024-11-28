@@ -21,7 +21,7 @@ export default function PainelSenhas() {
       try {
         const response = await api.get("/atendimento/chamadas");
         const senhas = response.data;
-        const senhaAtiva = senhas.find(s => 
+        const senhaAtiva = senhas.find((s: Senha) => 
           s.status === "CHAMANDO" || s.status === "EM_ATENDIMENTO"
         );
         setSenhaAtual(senhaAtiva || null);
@@ -59,7 +59,7 @@ export default function PainelSenhas() {
         setSenhaAtual(data);
         buscarSenhasChamadas();
       });
-    }, (error) => {
+    }, (error: any) => {
       console.error("WebSocket Error:", error);
     });
   
