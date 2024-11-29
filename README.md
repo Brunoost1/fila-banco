@@ -18,13 +18,13 @@ Node.js (para desenvolvimento frontend)
 
 🔧 Instalação e Configuração
 1. Clone o repositório
-bashCopygit clone [URL_DO_SEU_REPOSITORIO]
+bashCopygit clone (https://github.com/Brunoost1/fila-banco/)
 cd fila-banco
 2. Configuração das Variáveis de Ambiente
 Crie um arquivo .env na raiz do projeto com as seguintes variáveis:
-envCopyMYSQL_URL=jdbc:mysql://a3-fila.mysql.database.azure.com:3306/a3_java
-MYSQL_USER=garrafa
-MYSQL_PASSWORD=Taus67t4DtFhFg
+envCopyMYSQL_URL=// SOLICITAR AO ADM
+MYSQL_USER= (SOLICITAR AO ADM)
+MYSQL_PASSWORD=(SOLICITAR AO ADM)
 3. Iniciando a Aplicação com Docker
 bashCopy# Parar containers anteriores (se existirem)
 docker-compose down -v
@@ -58,7 +58,7 @@ GET /api/senhas/status - Status das senhas
 👥 Acessos e Permissões
 Banco de Dados (Azure)
 
-Host: a3-fila.mysql.database.azure.com
+Host: SOLICITAR AO ADM
 Porta: 3306
 Banco: a3_java
 Usuário: [Solicitar ao administrador]
